@@ -39,7 +39,9 @@ public class Jugador extends PersonajeAnimado
 	
 	void saltar()
 	{
-		if(getY()==piso)
+		if(getY()==piso || jumps < 2){
 			aceleracion_y=60f;
+			jumps++;
+		}
 	}
 }

@@ -6,10 +6,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 public class Plataforma extends Image
 {
 	int velocidad = 300;
-	public Plataforma()
+	public Plataforma(int x)
 	{
 		super(new Texture("tierra.png"));
-		this.setX(500);
+		this.setX(x);
 		this.setY(-200);
 	}
 	

@@ -18,6 +18,7 @@ public class PersonajeAnimado extends Actor
 	float frame;
 	float velocidad_animacion;
 	int piso;
+	int jumps = 0;
 
 	public PersonajeAnimado(ArrayList<Image>images)
 	{
@@ -49,14 +50,17 @@ public class PersonajeAnimado extends Actor
 		velocidad_x+=aceleracion_x;
 		velocidad_y+=aceleracion_y;
 		moveBy(velocidad_x*delta, velocidad_y*delta);
-		if(getY()<=piso)
+		if(getY()<=piso){
 			setY(piso);
+			jumps = 0;
+		}
 	}
 	
 	@Override
 	public void draw(Batch batch, float parentAlpha) {
 		super.draw(batch, parentAlpha);
 		images.get(dibujo_actual).setPosition(getX(), getY());
+		images.get(dibujo_actual).setSize(getWidth(), getHeight());
 		images.get(dibujo_actual).draw(batch, parentAlpha);
 	}
 	

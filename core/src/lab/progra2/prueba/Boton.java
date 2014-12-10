@@ -4,10 +4,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class Boton extends Image{
-	private BotonInput btn;
+	protected BotonInput btn;
+	protected Image img;
 	
 	Boton(Texture t){
 		super(t);
+		img = new Image(t);
 		btn = new BotonInput(this);
 		addListener(btn);
 	}

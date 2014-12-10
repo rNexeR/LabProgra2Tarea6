@@ -1,8 +1,11 @@
 package lab.progra2.prueba;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -11,9 +14,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 public class ClasePrincipal extends ApplicationAdapter implements InputProcessor{
 	Stage stage;
 	Stage menu;
+	Stage win;
 	Stage over;
 	Stage ins;
+	Stage lvls;
 	int frame = 0;
+	int lvl = 0;
+	int jump = 0;
 	
 	Enemigo enemy;
 	Jugador jugador;
@@ -21,7 +28,12 @@ public class ClasePrincipal extends ApplicationAdapter implements InputProcessor
 	Boton instru;
 	Boton exit;
 	Boton instrucc;
+	Boton lvl1, lvl2, lvl3;
+	Boton pause;
 	Image img;
+	
+	Music mmenu;
+	Music mplay;
 	
 	char state;
 	
@@ -29,27 +41,88 @@ public class ClasePrincipal extends ApplicationAdapter implements InputProcessor
 	public void create () {		
 		stage=new Stage();
 		menu = new Stage();
+		win = new Stage();
 		over = new Stage();
+		lvls = new Stage();
 		Gdx.input.setInputProcessor(this);
 		
+		mplay = Gdx.audio.newMusic(Gdx.files.getFileHandle("play.mp3", FileType.Internal));
+		mplay.setLooping(true);
+		mplay.stop();
+		
+		mmenu = Gdx.audio.newMusic(Gdx.files.getFileHandle("menu.mp3", FileType.Internal));
+		mmenu.setLooping(true);
+		mmenu.play();
+		
 		createMenu();
+		createInstrucciones();
+		createGameOver();
+		createLvls();
+		createWin();
 		
-		ins = new Stage();
-		instrucc = new Boton(new Texture("Instrucciones.png"));
-		instrucc.setSize(650, 480);
-		ins.addActor(instrucc);
-		
-		over.addActor(new Over());
-		
+		state = 'M';
+	}
+	
+	void createGame(int mov){
+		createJugador();
+		createEnemigo(mov);
+		createPlataforma();
+	}
+	
+	void createLvls(){
+		img = new Image(new Texture("lvls.png"));
+		img.setSize(650, 480);
+		lvls.addActor(img);
+		lvl1 = new BotonAnimado(new Texture("lvl1.png"));
+		lvls.addActor(lvl1);
+		lvl2 = new BotonAnimado(new Texture("lvl2.png"));
+		lvls.addActor(lvl2);
+		lvl3 = new BotonAnimado(new Texture("lvl3.png"));
+		lvls.addActor(lvl3);
+	}
+	
+	void createEnemigo(int mov){
+		enemy = new Enemigo(jugador, -mov);
+		stage.addActor(enemy);
+	}
+	
+	void createPlataforma(){
+		stage.addActor(new Plataforma(0));
+		stage.addActor(new Plataforma(534));
+	}
+	
+	void createNewPlataforma(){
+		if (lvl == 300){
+			stage.addActor(new Plataforma(250));
+			stage.addActor(new Plataforma(550));
+		}else if (lvl == 400){
+			stage.addActor(new Plataforma(500));
+			stage.addActor(new Plataforma(600));
+		}else if (lvl == 500)
+			stage.addActor(new Plataforma(634));
+	}
+	
+	void createJugador(){
 		jugador = new Jugador();
 		img = new Image(new Texture("bgp.png"));
 		img.setSize(650, 480);
 		stage.addActor(img);
 		stage.addActor(jugador);
-		enemy = new Enemigo(jugador);
-		stage.addActor(enemy);
-		stage.addActor(new Plataforma());
-		state = 'M';
+	}
+	
+	void createGameOver(){
+		over.addActor(new Over());
+	}
+	
+	void createWin(){
+		win.addActor(new Win());
+	}
+	
+	void createInstrucciones(){
+		ins = new Stage();
+		instrucc = new Boton(new Texture("Instrucciones.png"));
+		instrucc.setSize(650, 480);
+		ins.addActor(instrucc);
 	}
 
 	void createMenu(){
@@ -101,33 +174,72 @@ public class ClasePrincipal extends ApplicationAdapter implements InputProcessor
 		Gdx.gl.glClearColor(0f, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
-		if (state == 'P'){
+		if (state == 'P'){//Play
+			mmenu.stop();
+			mplay.play();
 			Gdx.input.setInputProcessor(this);
 			stage.draw();
 			stage.act();
+			if (enemy.getX()<=0){
+				createNewPlataforma();
+				createEnemigo(lvl);
+				jump++;
+			}
 			if (enemy.colision(jugador)){
 				state = 'L';
 			}
-		}else if (state == 'L'){
+			if (jump>15){
+				state = 'W';
+			}
+		}else if(state == 'W'){
+			Gdx.input.setInputProcessor(win);
+			win.draw();
+			win.act();
+			if (Gdx.input.isTouched()){
+				jump = 0;
+				mplay.stop();
+				create();
+			}
+		}else if(state == 'V'){
+			Gdx.input.setInputProcessor(lvls);
+			lvls.draw();
+			lvls.act();
+			if (lvl1.wasTouch()){
+				lvl = 300;
+				createGame(lvl);
+				state = 'P';
+			}else if (lvl2.wasTouch()){
+				lvl = 400;
+				createGame(lvl);
+				state = 'P';
+			}else if (lvl3.wasTouch()){
+				lvl = 500;
+				createGame(lvl);
+				state = 'P';
+			}
+		}else if (state == 'L'){//GameOver
 			Gdx.input.setInputProcessor(over);
 			over.draw();
 			over.act();
 			if (Gdx.input.isTouched()){
+				mplay.stop();
 				create();
 			}
-		}else if(state == 'M'){
+		}else if(state == 'M'){//Menu
+			mmenu.play();
+			mplay.stop();
 			Gdx.input.setInputProcessor(menu);
 			menu.draw();
 			menu.act();
 			if (play.wasTouch())
-				state = 'P';
+				state = 'V';
 			else if (instru.wasTouch()){
 				System.out.println("Instrucciones de Juego");
 				state = 'I';
 			}
 			else if (exit.wasTouch())
 				System.exit(0);
-		}else if (state == 'I'){
+		}else if (state == 'I'){//Instrucciones
 			Gdx.input.setInputProcessor(ins);
 			ins.draw();
 			ins.act();
@@ -141,7 +253,7 @@ public class ClasePrincipal extends ApplicationAdapter implements InputProcessor
 
 	@Override
 	public boolean keyDown(int keycode) {
-		jugador.saltar();
+		//jugador.saltar();
 		return false;
 	}
 
