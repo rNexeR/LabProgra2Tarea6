@@ -169,6 +169,15 @@ public class ClasePrincipal extends ApplicationAdapter implements InputProcessor
 		menu.addActor(exit);
 	}
 	
+	void vibrar(){
+		try { 
+            Gdx.input.vibrate(200); 
+            System.out.println("vibra"); 
+	    } catch (Exception e) {
+	        System.out.println(e); 
+	    }
+	}
+	
 	@Override
 	public void render () {
 		Gdx.gl.glClearColor(0f, 1, 1, 1);
@@ -253,7 +262,8 @@ public class ClasePrincipal extends ApplicationAdapter implements InputProcessor
 
 	@Override
 	public boolean keyDown(int keycode) {
-		//jugador.saltar();
+		vibrar();
+		jugador.saltar();
 		return false;
 	}
 
@@ -271,6 +281,7 @@ public class ClasePrincipal extends ApplicationAdapter implements InputProcessor
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		vibrar();
 		jugador.saltar();
 		return false;
 	}
